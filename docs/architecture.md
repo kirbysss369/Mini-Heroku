@@ -18,22 +18,23 @@ create app
 -> deployment becomes READY or FAILED
 ```
 
-The current bootstrap milestone does not implement that lifecycle yet.
+The control plane now has the core persistence model for that lifecycle, but scheduling and deployment execution are not implemented yet.
 
 ## Components
 
 ### Control Plane
 
-The control plane is a Python 3.12+ FastAPI service. PostgreSQL is the source of truth once domain models are introduced in later milestones.
+The control plane is a Python 3.12+ FastAPI service. PostgreSQL is the source of truth for applications, deployments, worker nodes, and commands.
 
-The bootstrap contains:
+The current control plane contains:
 - a minimal FastAPI application;
 - `GET /health`;
 - environment-based settings;
-- SQLAlchemy engine/session configuration;
-- pytest coverage for the health endpoint.
+- SQLAlchemy 2.x models and session configuration;
+- Alembic migrations;
+- pytest coverage for the health endpoint and database model behavior.
 
-No domain models or deployment business logic exist yet.
+No scheduling, command dispatch, or deployment execution logic exists yet.
 
 ### Worker Agent
 
@@ -54,11 +55,9 @@ The demo app exposes `GET /health` and `GET /` with version information and is i
 
 ### PostgreSQL
 
-PostgreSQL is the only infrastructure service in the root Compose file for this milestone and remains the source of truth for v0.1.
+PostgreSQL is the only infrastructure service in the root Compose file and remains the source of truth for v0.1.
 
 ## Planned v0.1 state machines
-
-These states document intended architecture and are not implemented in this milestone.
 
 Deployment states:
 
@@ -108,4 +107,4 @@ Unless explicitly requested by a later milestone:
 - billing;
 - production observability stacks.
 
-For this bootstrap milestone, deployment domain models, scheduling, agent registration, heartbeats, command polling, Docker Engine integration, health-check execution, and deployment state transitions are intentionally postponed.
+Scheduling, agent registration, heartbeats, command polling, Docker Engine integration, health-check execution, and deployment state transitions remain intentionally postponed until later milestones.
