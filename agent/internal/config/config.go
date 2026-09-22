@@ -6,30 +6,32 @@ import (
 	"time"
 )
 
-const defaultShutdownTimeout = 10 * time.Second
+const defaultHeartbeatInterval = 10 * time.Second
 
 type Config struct {
-	AgentID         string
-	ControlPlaneURL string
-	ShutdownTimeout time.Duration
+	ControlPlaneURL   string
+	NodeName          string
+	NodePublicHost    string
+	HeartbeatInterval time.Duration
 }
 
 func Load() (Config, error) {
 	cfg := Config{
-		AgentID:         getenv("AGENT_ID", "agent-local"),
-		ControlPlaneURL: getenv("CONTROL_PLANE_URL", "http://localhost:8000"),
-		ShutdownTimeout: defaultShutdownTimeout,
+		ControlPlaneURL:   getenv("CONTROL_PLANE_URL", "http://localhost:8000"),
+		NodeName:          getenv("NODE_NAME", "worker-1"),
+		NodePublicHost:    getenv("NODE_PUBLIC_HOST", "127.0.0.1"),
+		HeartbeatInterval: defaultHeartbeatInterval,
 	}
 
-	if raw := os.Getenv("SHUTDOWN_TIMEOUT"); raw != "" {
-		timeout, err := time.ParseDuration(raw)
+	if raw := os.Getenv("HEARTBEAT_INTERVAL"); raw != "" {
+		interval, err := time.ParseDuration(raw)
 		if err != nil {
-			return Config{}, fmt.Errorf("parse SHUTDOWN_TIMEOUT: %w", err)
+			return Config{}, fmt.Errorf("parse HEARTBEAT_INTERVAL: %w", err)
 		}
-		if timeout <= 0 {
-			return Config{}, fmt.Errorf("SHUTDOWN_TIMEOUT must be positive")
+		if interval <= 0 {
+			return Config{}, fmt.Errorf("HEARTBEAT_INTERVAL must be positive")
 		}
-		cfg.ShutdownTimeout = timeout
+		cfg.HeartbeatInterval = interval
 	}
 
 	return cfg, nil

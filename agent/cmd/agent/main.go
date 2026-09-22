@@ -2,48 +2,39 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	agentapp "github.com/kirbysss369/mini-heroku/agent/internal/agent"
 	"github.com/kirbysss369/mini-heroku/agent/internal/config"
+	"github.com/kirbysss369/mini-heroku/agent/internal/controlplane"
 )
 
+const requestTimeout = 5 * time.Second
+
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	slog.SetDefault(logger)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	cfg, err := config.Load()
 	if err != nil {
-		slog.Error("load agent config", "error", err)
+		logger.Error("load agent config", "error", err)
 		os.Exit(1)
 	}
 
-	slog.Info(
-		"agent starting",
-		"agent_id", cfg.AgentID,
-		"control_plane_url", cfg.ControlPlaneURL,
-	)
+	client := controlplane.NewClient(cfg.ControlPlaneURL, requestTimeout)
+	runner := agentapp.NewRunner(cfg, client, logger)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	<-ctx.Done()
-	slog.Info("shutdown signal received")
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
-	defer cancel()
-
-	if err := shutdown(shutdownCtx); err != nil {
-		slog.Error("graceful shutdown failed", "error", err)
+	logger.Info("agent starting", "node", cfg.NodeName, "control_plane", cfg.ControlPlaneURL)
+	if err := runner.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
+		logger.Error("agent stopped with error", "error", err)
 		os.Exit(1)
 	}
-
-	slog.Info("agent stopped")
-}
-
-func shutdown(_ context.Context) error {
-	// Future milestones will stop pollers and in-flight work here.
-	return nil
+	logger.Info("agent stopped")
 }
