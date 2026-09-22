@@ -2,12 +2,11 @@ import os
 from pathlib import Path
 
 import pytest
-from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from app.models import Application, Command, Deployment, Node
+from alembic import command
 
 CONTROL_PLANE_DIR = Path(__file__).resolve().parents[1]
 DEFAULT_DATABASE_URL = "postgresql+psycopg://mini_paas:mini_paas@localhost:5432/mini_paas"
