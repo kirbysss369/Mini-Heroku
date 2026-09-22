@@ -21,14 +21,14 @@ Start PostgreSQL:
 make up
 ```
 
-Install control-plane dependencies and run tests:
+Install control-plane dependencies and run tests with Python 3.12 or newer:
 
 ```bash
 cd control-plane
-python3.12 -m venv .venv
+python3 -m venv .venv
 . .venv/bin/activate
-pip install -e ".[dev]"
-pytest
+python -m pip install -e ".[dev]"
+python -m pytest
 ```
 
 Run Go tests:

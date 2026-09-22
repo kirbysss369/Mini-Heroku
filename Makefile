@@ -1,4 +1,4 @@
-PYTHON ?= python3.12
+PYTHON ?= python3
 
 .PHONY: up down test test-python test-go lint
 
